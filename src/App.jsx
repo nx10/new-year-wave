@@ -717,7 +717,7 @@ export default function App() {
                 <div className="tooltip-info">
                   Solar midnight {displayYear}:
                   <span className="tooltip-time">
-                    {hoveredCountry.solarMidnightTime.toFormat('MMM d, HH:mm')} UTC
+                    {hoveredCountry.solarMidnightTime.toLocal().toFormat('MMM d, HH:mm')}
                   </span>
                 </div>
                 <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
@@ -742,7 +742,7 @@ export default function App() {
                 <div className="tooltip-info">
                   Solar midnight {displayYear}:
                   <span className="tooltip-time">
-                    {hoveredCountry.solarMidnightTime.toFormat('MMM d, HH:mm')} UTC
+                    {hoveredCountry.solarMidnightTime.toLocal().toFormat('MMM d, HH:mm')}
                   </span>
                 </div>
                 <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
@@ -757,40 +757,17 @@ export default function App() {
           </div>
         </div>
 
-        {/* Time info cards */}
-        <div className="time-cards">
-          <div className="time-card">
-            <div className="time-card-label">Your Local Time</div>
-            <div className="time-card-value">{localTime.toFormat('HH:mm:ss')}</div>
-            <div className="time-card-date">{localTime.toFormat('cccc, MMMM d')}</div>
+        {/* Status bar */}
+        <div className="status-bar">
+          <div className="local-time">
+            <span className="time-value">{localTime.toFormat('HH:mm:ss')}</span>
+            <span className="time-label">{localTime.toFormat('cccc, MMM d')}</span>
           </div>
-          <div className="time-card">
-            <div className="time-card-label">UTC Time</div>
-            <div className="time-card-value">{currentTime.toFormat('HH:mm:ss')}</div>
-            <div className="time-card-date">{currentTime.toFormat('cccc, MMMM d')}</div>
-          </div>
-        </div>
-
-        <div className="info-panel">
-          <div className="info-card">
-            <div className="info-label">Solar Midnight At</div>
-            <div className="info-value mono">{formatLongitude(solarMidnightLon)}</div>
-          </div>
-          <div className="info-card">
-            <div className="info-label">{displayYear} Coverage</div>
-            <div className="info-value">{coverage.toFixed(1)}%</div>
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${coverage}%` }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="info-card">
-            <div className="info-label">Status</div>
-            <div className="info-value status">{status}</div>
+          <div className="status-info">
+            <span className="status-text">{status}</span>
+            {inTransition && (
+              <span className="coverage-text">{coverage.toFixed(0)}% complete</span>
+            )}
           </div>
         </div>
 

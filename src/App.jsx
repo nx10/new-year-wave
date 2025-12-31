@@ -410,7 +410,8 @@ export default function App() {
           .attr('y', margin.top)
           .attr('width', rightEdge - midnightX)
           .attr('height', height - margin.top - margin.bottom)
-          .attr('fill', 'url(#newYearGradient)');
+          .attr('fill', 'url(#newYearGradient)')
+          .style('pointer-events', 'none');
       } else {
         // Line is in western hemisphere (e.g., -30°)
         // New year: from midnightX to right edge (wraps around)
@@ -419,7 +420,8 @@ export default function App() {
           .attr('y', margin.top)
           .attr('width', rightEdge - midnightX)
           .attr('height', height - margin.top - margin.bottom)
-          .attr('fill', 'url(#newYearGradient)');
+          .attr('fill', 'url(#newYearGradient)')
+          .style('pointer-events', 'none');
       }
     } else if (transitionComplete) {
       svg.append('rect')
@@ -427,7 +429,8 @@ export default function App() {
         .attr('y', margin.top)
         .attr('width', rightEdge - leftEdge)
         .attr('height', height - margin.top - margin.bottom)
-        .attr('fill', 'url(#newYearGradient)');
+        .attr('fill', 'url(#newYearGradient)')
+        .style('pointer-events', 'none');
     }
 
     // Graticule
@@ -457,25 +460,52 @@ export default function App() {
       .attr('stroke-width', 0.5)
       .style('cursor', 'pointer')
       .on('mouseenter', (event, d) => {
-        const centroid = d3.geoCentroid(d);
-        if (centroid) {
-          const solarMidnightTime = getSolarMidnightTime(centroid[0]);
-          setHoveredCountry({
-            name: d.properties?.name || 'Unknown',
-            longitude: centroid[0],
-            solarMidnightTime,
-            inNewYear: isNewYear(centroid[0])
-          });
+        // Only show on hover for non-touch devices
+        if (window.matchMedia('(hover: hover)').matches) {
+          const centroid = d3.geoCentroid(d);
+          if (centroid) {
+            const solarMidnightTime = getSolarMidnightTime(centroid[0]);
+            setHoveredCountry({
+              name: d.properties?.name || 'Unknown',
+              longitude: centroid[0],
+              solarMidnightTime,
+              inNewYear: isNewYear(centroid[0])
+            });
+          }
         }
         d3.select(event.currentTarget)
           .attr('stroke', '#2dd4bf')
           .attr('stroke-width', 1.5);
       })
       .on('mouseleave', (event) => {
-        setHoveredCountry(null);
+        // Only auto-hide on mouseleave for non-touch devices
+        if (window.matchMedia('(hover: hover)').matches) {
+          setHoveredCountry(null);
+        }
         d3.select(event.currentTarget)
           .attr('stroke', 'rgba(45, 212, 191, 0.3)')
           .attr('stroke-width', 0.5);
+      })
+      .on('click', (event, d) => {
+        // Toggle on click for touch devices
+        event.stopPropagation();
+        const centroid = d3.geoCentroid(d);
+        if (centroid) {
+          const solarMidnightTime = getSolarMidnightTime(centroid[0]);
+          const countryName = d.properties?.name || 'Unknown';
+          
+          // If same country clicked, close it
+          if (hoveredCountry?.name === countryName) {
+            setHoveredCountry(null);
+          } else {
+            setHoveredCountry({
+              name: countryName,
+              longitude: centroid[0],
+              solarMidnightTime,
+              inNewYear: isNewYear(centroid[0])
+            });
+          }
+        }
       });
 
     // Equator
@@ -504,7 +534,8 @@ export default function App() {
       .attr('y', margin.top)
       .attr('width', 40)
       .attr('height', height - margin.top - margin.bottom)
-      .attr('fill', 'url(#midnightGlow)');
+      .attr('fill', 'url(#midnightGlow)')
+      .style('pointer-events', 'none');
 
     svg.append('line')
       .attr('x1', midnightX)
@@ -513,7 +544,8 @@ export default function App() {
       .attr('y2', height - margin.bottom)
       .attr('stroke', '#2dd4bf')
       .attr('stroke-width', 2)
-      .attr('filter', 'url(#glow)');
+      .attr('filter', 'url(#glow)')
+      .style('pointer-events', 'none');
 
     // User location marker
     if (userLocation) {
@@ -664,27 +696,65 @@ export default function App() {
           </div>
         )}
 
-        <div className="globe-container">
-          <svg
-            ref={svgRef}
-            viewBox="0 0 900 500"
-            role="img"
-            aria-label={`World map showing the progress of the ${displayYear} new year wave`}
-          />
-          {/* Hover tooltip */}
-          {hoveredCountry && (
-            <div className="hover-tooltip">
-              <div className="tooltip-title">{hoveredCountry.name}</div>
-              <div className="tooltip-info">
-                Solar midnight {displayYear}:
-                <br />
-                {hoveredCountry.solarMidnightTime.toFormat('MMM d, HH:mm')} UTC
+        <div className="globe-wrapper">
+          <div className="globe-container">
+            <svg
+              ref={svgRef}
+              viewBox="0 0 900 500"
+              role="img"
+              aria-label={`World map showing the progress of the ${displayYear} new year wave`}
+              onClick={(e) => {
+                // Dismiss tooltip when clicking on svg background (not a country)
+                if (e.target.tagName === 'svg' || e.target.tagName === 'rect') {
+                  setHoveredCountry(null);
+                }
+              }}
+            />
+            {/* Desktop tooltip - overlays map */}
+            {hoveredCountry && (
+              <div className="country-tooltip desktop-only">
+                <div className="tooltip-title">{hoveredCountry.name}</div>
+                <div className="tooltip-info">
+                  Solar midnight {displayYear}:
+                  <span className="tooltip-time">
+                    {hoveredCountry.solarMidnightTime.toFormat('MMM d, HH:mm')} UTC
+                  </span>
+                </div>
+                <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
+                  {hoveredCountry.inNewYear ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
+                </div>
               </div>
-              <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
-                {hoveredCountry.inNewYear ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
+            )}
+          </div>
+          
+          {/* Mobile tooltip - below map with reserved space */}
+          <div className="mobile-tooltip-container mobile-only">
+            {hoveredCountry ? (
+              <div className="country-tooltip-mobile">
+                <button 
+                  className="tooltip-close" 
+                  onClick={() => setHoveredCountry(null)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+                <div className="tooltip-title">{hoveredCountry.name}</div>
+                <div className="tooltip-info">
+                  Solar midnight {displayYear}:
+                  <span className="tooltip-time">
+                    {hoveredCountry.solarMidnightTime.toFormat('MMM d, HH:mm')} UTC
+                  </span>
+                </div>
+                <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
+                  {hoveredCountry.inNewYear ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="tooltip-placeholder">
+                Tap a country to see its solar midnight time
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Time info cards */}

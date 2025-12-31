@@ -86,10 +86,22 @@ body {
   animation: fadeIn 0.8s ease-out;
 }
 
+@media (max-width: 600px) {
+  .content {
+    padding: 1rem 0.75rem;
+  }
+}
+
 /* Header */
 .header {
   text-align: center;
   margin-bottom: 2.5rem;
+}
+
+@media (max-width: 600px) {
+  .header {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .title {
@@ -112,24 +124,6 @@ body {
   color: var(--text-dim);
   letter-spacing: 0.25em;
   text-transform: uppercase;
-}
-
-/* Globe container */
-.globe-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.globe-container svg {
-  width: 100%;
-  max-width: 900px;
-  height: auto;
-  filter: drop-shadow(0 0 60px rgba(45, 212, 191, 0.12));
-  display: block;
 }
 
 /* Info panel */
@@ -234,6 +228,8 @@ body {
 @media (max-width: 600px) {
   .legend {
     gap: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -278,6 +274,14 @@ body {
   color: var(--text-dim);
 }
 
+@media (max-width: 600px) {
+  .explanation {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .explanation p {
   margin-bottom: 1rem;
 }
@@ -303,6 +307,13 @@ body {
   background: rgba(27, 38, 59, 0.5);
   border-radius: 4px;
   border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+@media (max-width: 600px) {
+  .timezone-note {
+    font-size: 0.7rem;
+    padding: 0.6rem 0.8rem;
+  }
 }
 
 .timezone-note a {
@@ -519,6 +530,7 @@ body {
 @media (max-width: 500px) {
   .time-cards {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
 
@@ -528,6 +540,15 @@ body {
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
   text-align: center;
+}
+
+@media (max-width: 500px) {
+  .time-card {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 .time-card-label {
@@ -547,51 +568,172 @@ body {
   letter-spacing: 0.05em;
 }
 
+@media (max-width: 500px) {
+  .time-card-value {
+    font-size: 1.75rem;
+  }
+}
+
 .time-card-date {
   font-size: 0.9rem;
   color: var(--text-dim);
   margin-top: 0.25rem;
 }
 
-/* Hover tooltip */
-.globe-container {
-  position: relative;
+@media (max-width: 500px) {
+  .time-card-date {
+    font-size: 0.8rem;
+  }
 }
 
-.hover-tooltip {
+/* Globe wrapper and container */
+.globe-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.globe-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.globe-container svg {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  filter: drop-shadow(0 0 60px rgba(45, 212, 191, 0.12));
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .globe-wrapper {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .globe-container {
+    border-radius: 0;
+  }
+  
+  .globe-container svg {
+    filter: none;
+  }
+}
+
+/* Desktop tooltip - overlay on map */
+.country-tooltip {
   position: absolute;
   top: 1rem;
   right: 1rem;
   background: rgba(13, 27, 42, 0.95);
   border: 1px solid rgba(45, 212, 191, 0.3);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  pointer-events: none;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(10px);
+  min-width: 200px;
+  max-width: 260px;
   z-index: 10;
-  min-width: 180px;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (hover: none), (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* Mobile tooltip container - fixed height to prevent layout shift */
+.mobile-tooltip-container {
+  min-height: 90px;
+  padding: 0 0.75rem;
+}
+
+.country-tooltip-mobile {
+  position: relative;
+  background: linear-gradient(145deg, rgba(27, 38, 59, 0.95), rgba(13, 27, 42, 0.98));
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+}
+
+.tooltip-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  background: rgba(27, 38, 59, 0.3);
+  border: 1px dashed rgba(45, 212, 191, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.tooltip-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.tooltip-close:hover {
+  color: var(--text-primary);
 }
 
 .tooltip-title {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 400;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  padding-right: 1.5rem;
 }
 
 .tooltip-info {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
   color: var(--text-dim);
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+.tooltip-time {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
 }
 
 .tooltip-status {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .tooltip-status.new-year {

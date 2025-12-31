@@ -11,9 +11,13 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'd3': ['d3'],
-          'topojson': ['topojson-client'],
+        manualChunks(id) {
+          if (id.includes('node_modules/d3')) {
+            return 'd3'
+          }
+          if (id.includes('node_modules/topojson-client')) {
+            return 'topojson'
+          }
         }
       }
     }

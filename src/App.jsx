@@ -133,36 +133,18 @@ export default function App() {
     if (transitionComplete) return () => true;
     
     // During transition: the midnight line sweeps westward from 180°
-    // Locations WEST of 180° and EAST of the current midnight line are in the new year
+    // New year region = everything EAST of the current midnight line
+    // (i.e., between the midnight line and 180°, going eastward)
     return (lon) => {
-      // The wave started at 180° and the front is at solarMidnightLon
-      // Everything "behind" the wave (between 180° going west to the current line) is in new year
-      
       // Normalize longitude to -180 to 180
       const normLon = lon > 180 ? lon - 360 : (lon < -180 ? lon + 360 : lon);
-      const normMidnight = solarMidnightLon;
       
-      // The new year region is from the current midnight line (going eastward) to 180°
-      // then wrapping from -180° back toward the midnight line
-      // Actually simpler: new year = everywhere EAST of the midnight line
-      
-      if (normMidnight <= 0) {
-        // Line is in western hemisphere (e.g., -30°)
-        // New year: everything from normMidnight eastward to 180°
-        return normLon > normMidnight;
-      } else {
-        // Line is in eastern hemisphere (e.g., 150°) - early in the wave
-        // New year: from normMidnight to 180°
-        return normLon > normMidnight || normLon < -180 + (180 - normMidnight);
-        // Actually simpler: normLon > normMidnight (since we're near 180°)
-        // But need to handle wrap... let's think again
-        
-        // If midnight is at 150°, new year is 150° to 180° plus -180° to -180° (nothing yet from west)
-        // So just: normLon > normMidnight AND normLon <= 180
-        // OR normLon >= -180 AND normLon < (normMidnight - 360) -- but that's always false
-        // So just: normLon > normMidnight
-        return normLon > normMidnight;
-      }
+      // The new year region is from solarMidnightLon eastward to 180°
+      // This is simply: normLon > solarMidnightLon
+      // Works because:
+      // - If midnight is at 90°E, new year is 90° to 180° (normLon > 90)
+      // - If midnight is at -30°, new year is -30° to 180° (normLon > -30)
+      return normLon > solarMidnightLon;
     };
   }, [solarMidnightLon, inTransition, transitionComplete]);
 
@@ -469,7 +451,7 @@ export default function App() {
               name: d.properties?.name || 'Unknown',
               longitude: centroid[0],
               solarMidnightTime,
-              inNewYear: isNewYear(centroid[0])
+              // Don't compute inNewYear here - it will be computed from current state when rendering
             });
           }
         }
@@ -502,7 +484,7 @@ export default function App() {
               name: countryName,
               longitude: centroid[0],
               solarMidnightTime,
-              inNewYear: isNewYear(centroid[0])
+              // Don't compute inNewYear here - it will be computed from current state when rendering
             });
           }
         }
@@ -720,8 +702,8 @@ export default function App() {
                     {hoveredCountry.solarMidnightTime.toLocal().toFormat('MMM d, HH:mm')}
                   </span>
                 </div>
-                <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
-                  {hoveredCountry.inNewYear ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
+                <div className={`tooltip-status ${isNewYear(hoveredCountry.longitude) ? 'new-year' : 'old-year'}`}>
+                  {isNewYear(hoveredCountry.longitude) ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
                 </div>
               </div>
             )}
@@ -745,8 +727,8 @@ export default function App() {
                     {hoveredCountry.solarMidnightTime.toLocal().toFormat('MMM d, HH:mm')}
                   </span>
                 </div>
-                <div className={`tooltip-status ${hoveredCountry.inNewYear ? 'new-year' : 'old-year'}`}>
-                  {hoveredCountry.inNewYear ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
+                <div className={`tooltip-status ${isNewYear(hoveredCountry.longitude) ? 'new-year' : 'old-year'}`}>
+                  {isNewYear(hoveredCountry.longitude) ? `✓ In ${displayYear}` : `Waiting for ${displayYear}`}
                 </div>
               </div>
             ) : (
